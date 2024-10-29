@@ -1,0 +1,85 @@
+// Establecer las tareas por defecto
+defaultTasks 'clean', 'test', 'aggregate'
+
+// Repositorios de dependencias
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+// Configuración del script de construcción
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "net.serenity-bdd:serenity-gradle-plugin:4.0.46" // Asegúrate de que esta versión sea compatible
+    }
+}
+
+// Aplicar plugins necesarios
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: "net.serenity-bdd.serenity-gradle-plugin"
+
+// Configuración de compatibilidad de Java
+sourceCompatibility = 17
+targetCompatibility = 17
+
+// Definición de versiones de dependencias
+ext {
+    slf4jVersion = '1.7.32' // Actualizado a una versión más reciente
+    serenityCoreVersion = '4.1.6'
+    junitVersion = '4.13.1'
+    assertJVersion = '3.22.0'
+    logbackVersion = '1.5.2'
+    jacksonVersion = '2.16.0' // Versión de Jackson Core
+}
+
+dependencies {
+    implementation 'io.github.bonigarcia:webdrivermanager:5.7.0'
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-junit:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-cucumber:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}"
+    testImplementation group: 'net.serenity-bdd', name: 'serenity-ensure', version: '4.2.6'
+    testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.0'
+    implementation 'net.serenity-bdd:serenity-rest-assured:4.2.6'
+
+
+
+    // Dependencias SLF4J actualizadas
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
+
+    // Añadir la dependencia de Jackson Core
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+
+    // Dependencias para pruebas
+    testImplementation "net.serenity-bdd:serenity-ensure:${serenityCoreVersion}"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.assertj:assertj-core:${assertJVersion}"
+}
+
+test {
+    // Configuración de pruebas
+    systemProperties System.getProperties()
+    maxParallelForks = 8 // Permitir ejecución paralela para acelerar las pruebas
+}
+
+// Configuración específica de Serenity
+serenity {
+    reports = ["single-page-html"]
+    requirementsDir = "src/test/resources/features" // Ubicación de los archivos de características Cucumber
+}
+
+// Permitir que Gradle continúe en caso de fallos
+gradle.startParameter.continueOnFailure = true
+
+// Ejecutar la tarea aggregate al finalizar las pruebas
+test.finalizedBy(aggregate)
